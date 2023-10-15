@@ -22,7 +22,7 @@ def allowed_filesize(filename):
 def route():
     return  'This is a service by Simple Wallet'
 
-@app.route('/api/v1/simplewallet/user/getReceiptItems', methods=['POST'])
+@app.route('/api/v1/simplewallet/user/scan-ocr', methods=['POST'])
 def receipt():
     if 'file' not in request.files:
         return {'status': False, 'message': 'FILE_NOT_FOUND'}, 400
