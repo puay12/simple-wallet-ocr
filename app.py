@@ -13,9 +13,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 def allowed_file(filename):
     return ('.' in filename) and (filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS)
 
+def allowed_filesize(filename):
+    file_size = round(((os.stat(filename).st_size) / (1024*1024)), 2)
+    
+    return (file_size <= 5.00)
+
 @app.route('/', methods=['GET'])
-def hello():
-    return 'Hello World!'
+def route():
+    return  'This is a service by Simple Wallet'
 
 @app.route('/api/v1/simplewallet/user/getReceiptItems', methods=['POST'])
 def receipt():
@@ -30,6 +35,11 @@ def receipt():
     if file and allowed_file(file.filename):
         # Save File
         filename = secure_filename(file.filename)
+        
+        # Check file size
+        if allowed_filesize(filename) is False:
+            return {'status': False, 'message': 'Ukuran gambar terlalu besar! Maks. 5 MB'}, 400
+        
         # Save File to /images
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
@@ -49,11 +59,11 @@ def receipt():
                     })
 
         if result_list == []:
-            return {'status': False, 'message': 'Maaf, Gambar ini Tidak Bisa Diproses.'}, 400
+            return {'status': False, 'message': 'Maaf, gambar ini tidak bisa diproses.'}, 400
 
         return {'status': True, 'items': json.dumps(result_list)}, 200
     
-    return {'status': False, 'message': 'File Hanya Boleh Berupa Gambar'}, 400
+    return {'status': False, 'message': 'File bukan berupa gambar'}, 400
 
 
 if __name__ == '__main__':
