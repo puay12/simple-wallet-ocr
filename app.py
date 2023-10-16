@@ -3,7 +3,6 @@ from werkzeug.utils import secure_filename
 import os
 import ocr
 import json
-import sys
 
 app = Flask(__name__, static_url_path='/images')
 UPLOAD_FOLDER = 'images/'
