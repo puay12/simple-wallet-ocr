@@ -22,7 +22,7 @@ def get_string(img_path):
 
     # OCR
     data = pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /home/forge/simplewallet-staging.agileteknik.com/app/bin/tessdata')
+        processed_image, lang='ind', config='--psm 6 --oem 3')
     
     return data
 
@@ -135,10 +135,15 @@ def get_end_index(data):
     end_index = None
 
     for index, text in enumerate(data):
-        if ('harga jual' in text) | ('total' in text) | ('otal' in text) | ('tom' in text):
-            if any_digit(text):
+        if ('solaria' in data) | ('\'olaria' in data):
+            if ('items' in text) | ('ems' in text):
                 end_index = index
                 break
+        else:
+            if ('harga jual' in text) | ('total' in text) | ('otal' in text) | ('tom' in text):
+                if any_digit(text):
+                    end_index = index
+                    break
 
     return end_index
 
