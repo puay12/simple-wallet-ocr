@@ -8,8 +8,11 @@ numpy==1.26.0
 opencv-python==4.8.1.78
 packaging==23.1
 pandas==2.0.3
+Pillow==10.1.0
 pycodestyle==2.11.1
 pyparsing==3.1.1
 pytesseract==0.3.10
+python-dateutil==2.8.2
+pytz==2023.3.post1
 tomli==2.0.1
 Werkzeug==3.0.0
