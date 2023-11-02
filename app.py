@@ -43,7 +43,8 @@ def receipt():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        data = ocr.get_string(filepath)
+        processed_img = ocr.image_preprocessing(filepath)
+        data = ocr.get_string(processed_img)
         data = ocr.text_preprocessing(data)
         item_name_list, item_price_list = ocr.get_items(data)
 

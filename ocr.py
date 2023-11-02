@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import re
 
-def get_string(img_path):
+def image_preprocessing(img_path):
     image = cv2.imread(img_path)
 
     # Convert to grayscale
@@ -19,12 +19,14 @@ def get_string(img_path):
     kernel = np.ones((1, 1), np.uint8)
     processed_image = cv2.dilate(processed_image, kernel, iterations=1)
     processed_image = cv2.erode(processed_image, kernel, iterations=1)
-
-    # OCR
-    data = pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3')
     
-    return data
+    return processed_image
+
+
+def get_string(processed_image):
+    
+    return pytesseract.image_to_string(
+        processed_image, lang='ind', config='--psm 6 --oem 3')
 
 
 def text_preprocessing(data):
