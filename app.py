@@ -19,7 +19,7 @@ def allowed_filesize(filename):
 
 @app.route('/', methods=['GET'])
 def route():
-    return  'This is a service by Simple Wallet'
+    return  {'status': True, 'message': 'This is a service by Simple Wallet'}, 200
 
 @app.route('/api/v1/simplewallet/user/scan-ocr', methods=['POST'])
 def receipt():
