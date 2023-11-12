@@ -26,7 +26,7 @@ def image_preprocessing(img_path):
 def get_string(processed_image):
     
     return pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /root/simple-wallet-ocr/tessdata/')
+        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir tessdata/')
     
 
 def text_preprocessing(data):
@@ -48,9 +48,6 @@ def get_items(data):
     
     start_index = get_start_index(data)
     end_index = get_end_index(data)
-    
-    print('start index: ', data[start_index])
-    print('end index: ', data[end_index])
 
     if((start_index != None) & (end_index != None)):
         item_temp = list(data[start_index:end_index])
