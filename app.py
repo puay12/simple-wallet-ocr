@@ -59,6 +59,7 @@ def receipt():
 
         processed_img = ocr.image_preprocessing(filepath)
         data = ocr.get_string(processed_img)
+        print(data)
         data = ocr.text_preprocessing(data)
         item_name_list, item_price_list = ocr.get_items(data)
 
