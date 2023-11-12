@@ -48,6 +48,8 @@ def get_items(data):
     
     start_index = get_start_index(data)
     end_index = get_end_index(data)
+    
+    print('start index: ', data[start_index])
 
     if((start_index != None) & (end_index != None)):
         item_temp = list(data[start_index:end_index])
@@ -70,13 +72,17 @@ def get_item_price_list(item, temps, item_price_list):
     
     if contain_discount(item) is False:
         if price_separated_possibility(temps):
-            if len(temps[(length-2)]) > 3:
+            if (len(temps[(length-2)]) > 3):
                 if len(temps[(length-1)]) == 1:
-                    item_price_list.append(int(remove_special_chars(temps[(length-2)])))
+                    list_item = remove_special_chars(temps[(length-2)])
+                    if list_item.isnumeric():
+                        item_price_list.append(int(list_item))
                 else:
                     item_price_list.append(int(price))
             else:
-                item_price_list.append(int(concat_text(get_separated_price(temps)).replace(' ', '')))
+                list_item = concat_text(get_separated_price(temps)).replace(' ', '')
+                if list_item.isnumeric():
+                    item_price_list.append(int(list_item))
         else:
             if (price.isnumeric()) & (len(price) != 2):
                 if (contain_x_qty(temps) is False):
