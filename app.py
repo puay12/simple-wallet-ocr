@@ -24,7 +24,7 @@ def delete_file(filepath):
 
 @app.route('/', methods=['GET'])
 def route():
-    return  {'status': True, 'message': 'This is a service by Simple Wallet OCR'}, 200
+    return  {'status': True, 'message': 'This is a OCR service by Simple Wallet'}, 200
 
 @app.route('/api/v1/simplewallet/user/scan-ocr', methods=['POST'])
 def receipt():
