@@ -19,15 +19,15 @@ def image_preprocessing(img_path):
     kernel = np.ones((1, 1), np.uint8)
     processed_image = cv2.dilate(processed_image, kernel, iterations=1)
     processed_image = cv2.erode(processed_image, kernel, iterations=1)
-
+    
     return processed_image
 
 
 def get_string(processed_image):
-
+    
     return pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /root/simple-wallet-ocr/tessdata/')
-
+        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir tessdata/')
+    
 
 def text_preprocessing(data):
     # Lower the case
@@ -38,16 +38,19 @@ def text_preprocessing(data):
 
     # String Split
     data = data.split("\n")
-
+    
     return data
 
 
 def get_items(data):
     item_name_list = []
     item_price_list = []
-
+    
     start_index = get_start_index(data)
     end_index = get_end_index(data)
+    
+    print('start index: ', data[start_index])
+    print('end index: ', data[end_index])
 
     if((start_index != None) & (end_index != None)):
         item_temp = list(data[start_index:end_index])
@@ -58,13 +61,16 @@ def get_items(data):
             if len(temps) > 0:
                 get_item_price_list(item=item, temps=temps, item_price_list=item_price_list)
                 get_item_name_list(item=item, temps=temps, item_name_list=item_name_list)
+                
+    if (len(item_price_list) > len(item_name_list)):
+        find_suitable_price(item_price_list)
 
     return item_name_list, item_price_list
 
 def get_item_price_list(item, temps, item_price_list):
     length = len(temps)
     price = remove_special_chars(temps[(length-1)])
-
+    
     if contain_discount(item) is False:
         if price_separated_possibility(temps):
             if len(temps[(length-2)]) > 3:
@@ -76,23 +82,24 @@ def get_item_price_list(item, temps, item_price_list):
                 item_price_list.append(int(concat_text(get_separated_price(temps)).replace(' ', '')))
         else:
             if (price.isnumeric()) & (len(price) != 2):
-                if 'x' not in temps:
+                if (contain_x_qty(temps) is False):
                     item_price_list.append(int(price))
     else:
         item_price_length = len(item_price_list)
-
+        
         if price_separated_possibility(temps):
             disc_price = int(remove_special_chars(concat_text(get_separated_price(temps)).replace(' ', '')))
         else:
             disc_price = int(remove_special_chars(temps[(length-1)]))
 
-        item_price_list[(item_price_length-1)] = item_price_list[(item_price_length-1)] - disc_price
-
+        if item_price_list[(item_price_length-1)] >= disc_price:
+            item_price_list[(item_price_length-1)] = item_price_list[(item_price_length-1)] - disc_price 
+    
     return
 
 def get_item_name_list(item, temps, item_name_list):
     container = []
-
+    
     collect_separated_item_names(container, item, temps)
 
     if len(container) > 1:
@@ -107,13 +114,15 @@ def get_item_name_list(item, temps, item_name_list):
     return
 
 def collect_separated_item_names(container, item, temps):
+    x_qty = contain_x_qty(temps)
+    
     for temp in temps:
         if temp.isalnum():
             if temp.isnumeric():
                 continue
             else:
                 if contain_discount(item) is False:
-                    if (temp != 'x'):
+                    if (x_qty is False) & (len(temps) > 1):
                         container.append(temp)
     return
 
@@ -124,7 +133,7 @@ def get_start_index(data):
         temp = text.split()
 
         if len(temp) > 0:
-            if ('npwp' not in text) & (('jalan' not in text) & ('jln' not in text)):
+            if ('npwp' not in text) & (any_jalan_word(text) is False) & ('npkp' not in text) & ('kota' not in text):
                 if does_price_exist(temp):
                     start_index = index
                     break
@@ -135,14 +144,19 @@ def get_start_index(data):
 
 def get_end_index(data):
     end_index = None
+    
+    if ('solaria' in data) | ('\'olaria' in data) | ('jolaria' in data):
+        is_solaria = True
+    else:
+        is_solaria = False
 
     for index, text in enumerate(data):
-        if ('solaria' in data) | ('\'olaria' in data):
+        if is_solaria:
             if ('items' in text) | ('ems' in text):
                 end_index = index
                 break
         else:
-            if ('harga jual' in text) | ('total' in text) | ('otal' in text) | ('tom' in text):
+            if ('harga jual' in text) | (any_total(text)) | ('donasi-bmh' in text):
                 if any_digit(text):
                     end_index = index
                     break
@@ -161,6 +175,13 @@ def does_price_exist(data):
             return True
         elif is_former_index_price(data):
             return True
+        elif (price.isnumeric()) & (len(price) < 11) & (price[0:1] != '0') & (len(data) >= 3):
+            flag = True
+            for item in data:
+                if ('/' in item):
+                    flag = False
+                    
+            return flag
         else:
             return False
 
@@ -185,10 +206,10 @@ def concat_text(data):
 
 def remove_special_chars(text):
     result = re.sub('[^A-Za-z0-9]+', '', text)
-
+    
     if (bool(re.match('[a-zA-Z\s]', result))) & ((len(re.findall('[0-9]', result)) > 2) | (len(re.findall('[0-9]', result)) == 1)):
         result = re.sub('[a-zA-Z\s]', '', result)
-
+    
     return result
 
 def contain_dot_comma(text):
@@ -199,3 +220,34 @@ def contain_discount(text):
 
 def any_digit(text):
     return any(map(str.isdigit, text))
+
+def any_jalan_word(text):
+    return ('jalan' in text) | ('jln' in text) | ('jln.' in text) | ('jalan.' in text) | ('jl.' in text)
+
+def any_total(text):
+    return ('total' in text) | ('otal' in text) | ('tom' in text)
+
+def find_suitable_price(item_price_list):
+    price = item_price_list[0]
+    
+    for item in item_price_list:
+        if item > price:
+            price = item
+    
+    update_price_list(price, item_price_list)
+    
+    return
+
+def update_price_list(price, item_price_list):
+    for item in item_price_list:
+        if item != price:
+            item_price_list.remove(item)
+            
+    return
+
+def contain_x_qty(temps):
+    for item in temps:
+        if 'x' in item:
+            return True
+        else:
+            return False
