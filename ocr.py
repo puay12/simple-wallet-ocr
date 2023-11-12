@@ -19,14 +19,14 @@ def image_preprocessing(img_path):
     kernel = np.ones((1, 1), np.uint8)
     processed_image = cv2.dilate(processed_image, kernel, iterations=1)
     processed_image = cv2.erode(processed_image, kernel, iterations=1)
-    
+
     return processed_image
 
 
 def get_string(processed_image):
-    
+
     return pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /home/forge/ocr-simplewallet-staging.agileteknik.com/tessdata/')
+        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /root/simple-wallet-ocr/tessdata/')
 
 
 def text_preprocessing(data):
@@ -38,14 +38,14 @@ def text_preprocessing(data):
 
     # String Split
     data = data.split("\n")
-    
+
     return data
 
 
 def get_items(data):
     item_name_list = []
     item_price_list = []
-    
+
     start_index = get_start_index(data)
     end_index = get_end_index(data)
 
@@ -64,7 +64,7 @@ def get_items(data):
 def get_item_price_list(item, temps, item_price_list):
     length = len(temps)
     price = remove_special_chars(temps[(length-1)])
-    
+
     if contain_discount(item) is False:
         if price_separated_possibility(temps):
             if len(temps[(length-2)]) > 3:
@@ -80,19 +80,19 @@ def get_item_price_list(item, temps, item_price_list):
                     item_price_list.append(int(price))
     else:
         item_price_length = len(item_price_list)
-        
+
         if price_separated_possibility(temps):
             disc_price = int(remove_special_chars(concat_text(get_separated_price(temps)).replace(' ', '')))
         else:
             disc_price = int(remove_special_chars(temps[(length-1)]))
 
-        item_price_list[(item_price_length-1)] = item_price_list[(item_price_length-1)] - disc_price 
-    
+        item_price_list[(item_price_length-1)] = item_price_list[(item_price_length-1)] - disc_price
+
     return
 
 def get_item_name_list(item, temps, item_name_list):
     container = []
-    
+
     collect_separated_item_names(container, item, temps)
 
     if len(container) > 1:
@@ -185,10 +185,10 @@ def concat_text(data):
 
 def remove_special_chars(text):
     result = re.sub('[^A-Za-z0-9]+', '', text)
-    
+
     if (bool(re.match('[a-zA-Z\s]', result))) & ((len(re.findall('[0-9]', result)) > 2) | (len(re.findall('[0-9]', result)) == 1)):
         result = re.sub('[a-zA-Z\s]', '', result)
-    
+
     return result
 
 def contain_dot_comma(text):
