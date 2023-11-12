@@ -17,6 +17,16 @@ def allowed_filesize(filename):
     
     return (file_size <= 5.00)
 
+def save_file(file):
+    # Save File
+    filename = secure_filename(file.filename)
+    
+    # Save File to /images
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+    
+    return filepath
+
 def delete_file(filepath):
     # delete file from /images
     if os.path.isfile(filepath):
@@ -28,6 +38,7 @@ def route():
 
 @app.route('/api/v1/simplewallet/user/scan-ocr', methods=['POST'])
 def receipt():
+    # Check if file exists in request
     if 'image' not in request.files:
         return {'status': False, 'message': 'FILE_NOT_FOUND'}, 400
 
@@ -38,11 +49,7 @@ def receipt():
     
     if file and allowed_file(file.filename):
         # Save File
-        filename = secure_filename(file.filename)
-        
-        # Save File to /images
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        filepath = save_file(file)
         
         # Check file size
         if allowed_filesize(filepath) is False:
