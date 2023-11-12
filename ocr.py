@@ -26,7 +26,7 @@ def image_preprocessing(img_path):
 def get_string(processed_image):
     
     return pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir tessdata/')
+        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /root/simple-wallet-ocr/tessdata/')
     
 
 def text_preprocessing(data):
