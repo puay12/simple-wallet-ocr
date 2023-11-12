@@ -14,7 +14,7 @@ def allowed_file(filename):
 
 def allowed_filesize(filename):
     file_size = round(((os.path.getsize(filename)) / (1024*1024)), 2)
-    
+
     return (file_size <= 5.00)
 
 def delete_file(filepath):
@@ -24,7 +24,7 @@ def delete_file(filepath):
 
 @app.route('/', methods=['GET'])
 def route():
-    return  {'status': True, 'message': 'This is a service by Simple Wallet'}, 200
+    return  {'status': True, 'message': 'This is a service by Simple Wallet OCR'}, 200
 
 @app.route('/api/v1/simplewallet/user/scan-ocr', methods=['POST'])
 def receipt():
@@ -32,29 +32,29 @@ def receipt():
         return {'status': False, 'message': 'FILE_NOT_FOUND'}, 400
 
     file = request.files['image']
-    
+
     if file.filename == '':
         return {'status': False, 'message': 'FILE_NOT_FOUND'}, 400
-    
+
     if file and allowed_file(file.filename):
         # Save File
         filename = secure_filename(file.filename)
-        
+
         # Save File to /images
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        
+
         # Check file size
         if allowed_filesize(filepath) is False:
             delete_file(filepath)
-            
+
             return {'status': False, 'message': 'Ukuran gambar terlalu besar! Maks. 5 MB'}, 400
 
         processed_img = ocr.image_preprocessing(filepath)
         data = ocr.get_string(processed_img)
         data = ocr.text_preprocessing(data)
         item_name_list, item_price_list = ocr.get_items(data)
-        
+
         # delete file from /images
         delete_file(filepath)
 
@@ -72,7 +72,7 @@ def receipt():
             return {'status': False, 'message': 'Maaf, gambar ini tidak bisa diproses.'}, 400
 
         return {'status': True, 'items': result_list}, 200
-    
+
     return {'status': False, 'message': 'File bukan berupa gambar'}, 400
 
 
