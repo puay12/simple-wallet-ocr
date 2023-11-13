@@ -48,8 +48,6 @@ def get_items(data):
     
     start_index = get_start_index(data)
     end_index = get_end_index(data)
-    
-    print('start index: ', data[start_index])
 
     if((start_index != None) & (end_index != None)):
         item_temp = list(data[start_index:end_index])
