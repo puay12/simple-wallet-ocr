@@ -26,7 +26,7 @@ def image_preprocessing(img_path):
 def get_string(processed_image):
     
     return pytesseract.image_to_string(
-        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir /root/simple-wallet-ocr/tessdata/')
+        processed_image, lang='ind', config='--psm 6 --oem 3 --tessdata-dir tessdata/')
     
 
 def text_preprocessing(data):
@@ -67,20 +67,25 @@ def get_items(data):
 def get_item_price_list(item, temps, item_price_list):
     length = len(temps)
     price = remove_special_chars(temps[(length-1)])
+    price_v2 = remove_special_chars(temps[(length-2)])
+    price_v3 = concat_text(get_separated_price(temps)).replace(' ', '')
+    
+    is_price1_numeric = price.isnumeric()
+    is_price2_numeric = price_v2.isnumeric()
+    is_price3_numeric = price_v3.isnumeric()
     
     if contain_discount(item) is False:
         if price_separated_possibility(temps):
             if (len(temps[(length-2)]) > 3):
                 if len(temps[(length-1)]) == 1:
-                    list_item = remove_special_chars(temps[(length-2)])
-                    if list_item.isnumeric():
-                        item_price_list.append(int(list_item))
+                    if is_price2_numeric:
+                        item_price_list.append(int(price_v2))
                 else:
-                    item_price_list.append(int(price))
+                    if is_price1_numeric:
+                        item_price_list.append(int(price))
             else:
-                list_item = concat_text(get_separated_price(temps)).replace(' ', '')
-                if list_item.isnumeric():
-                    item_price_list.append(int(list_item))
+                if is_price3_numeric:
+                    item_price_list.append(int(price_v3))
         else:
             if (price.isnumeric()) & (len(price) != 2):
                 if (contain_x_qty(temps) is False):
@@ -88,10 +93,12 @@ def get_item_price_list(item, temps, item_price_list):
     else:
         item_price_length = len(item_price_list)
         
-        if price_separated_possibility(temps):
-            disc_price = int(remove_special_chars(concat_text(get_separated_price(temps)).replace(' ', '')))
+        if (price_separated_possibility(temps)) & (is_price3_numeric):
+            disc_price = int(remove_special_chars(price_v3))
         else:
-            disc_price = int(remove_special_chars(temps[(length-1)]))
+            list_item = remove_special_chars(temps[(length-1)])
+            if list_item.isnumeric():
+                disc_price = int(list_item)
 
         if item_price_list[(item_price_length-1)] >= disc_price:
             item_price_list[(item_price_length-1)] = item_price_list[(item_price_length-1)] - disc_price 
